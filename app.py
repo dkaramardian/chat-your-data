@@ -6,9 +6,29 @@ import pickle
 from query_data import get_chain
 from threading import Lock
 
-with open("vectorstore.pkl", "rb") as f:
-    vectorstore = pickle.load(f)
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.document_loaders import UnstructuredFileLoader
+from langchain.vectorstores import ElasticVectorSearch, Pinecone, Weaviate, FAISS, Qdrant, Chroma
+from langchain.embeddings import OpenAIEmbeddings
 
+# with open("vectorstore.pkl", "rb") as f:
+#     vectorstore = pickle.load(f)
+
+os.environ["OPENAI_API_KEY"] = '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'
+
+
+# Load Data
+loader = UnstructuredFileLoader("Sample_processed_regdata.txt")
+raw_documents = loader.load()
+
+# Split text
+text_splitter = RecursiveCharacterTextSplitter()
+documents = text_splitter.split_documents(raw_documents)
+
+
+# Load Data to vectorstore
+embeddings = OpenAIEmbeddings()
+vectorstore = Chroma.from_documents(documents, embeddings)
 
 def set_openai_api_key(api_key: str):
     """Set the api key and return chain.
@@ -53,7 +73,7 @@ block = gr.Blocks(css=".gradio-container {background-color: lightgray}")
 
 with block:
     with gr.Row():
-        gr.Markdown("<h3><center>Chat-Your-Data (State-of-the-Union)</center></h3>")
+        gr.Markdown("<h3><center>Chat-Your-Data (Federal Regulations)</center></h3>")
 
         openai_api_key_textbox = gr.Textbox(
             placeholder="Paste your OpenAI API key (sk-...)",
@@ -67,7 +87,7 @@ with block:
     with gr.Row():
         message = gr.Textbox(
             label="What's your question?",
-            placeholder="Ask questions about the most recent state of the union",
+            placeholder="Ask questions about federal regulations",
             lines=1,
         )
         submit = gr.Button(value="Send", variant="secondary").style(full_width=False)
@@ -99,4 +119,4 @@ with block:
         outputs=[agent_state],
     )
 
-block.launch(debug=True)
+block.launch(debug=True, share=True)

@@ -1,11 +1,15 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import UnstructuredFileLoader
-from langchain.vectorstores.faiss import FAISS
+#from langchain.vectorstores.faiss import FAISS
+from langchain.vectorstores import ElasticVectorSearch, Pinecone, Weaviate, FAISS, Qdrant, Chroma
 from langchain.embeddings import OpenAIEmbeddings
 import pickle
+import os
+
+#os.environ["OPENAI_API_KEY"] = put sk key here
 
 # Load Data
-loader = UnstructuredFileLoader("state_of_the_union.txt")
+loader = UnstructuredFileLoader("Sample_processed_regdata.txt")
 raw_documents = loader.load()
 
 # Split text
@@ -19,5 +23,5 @@ vectorstore = FAISS.from_documents(documents, embeddings)
 
 
 # Save vectorstore
-with open("vectorstore.pkl", "wb") as f:
+with open("vectorstore3.pkl", "wb") as f:
     pickle.dump(vectorstore, f)
