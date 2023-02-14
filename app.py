@@ -14,7 +14,7 @@ from langchain.embeddings import OpenAIEmbeddings
 # with open("vectorstore.pkl", "rb") as f:
 #     vectorstore = pickle.load(f)
 
-os.environ["OPENAI_API_KEY"] = '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'
+#os.environ["OPENAI_API_KEY"] = put your key here
 
 
 # Load Data
