@@ -3,32 +3,18 @@ from typing import Optional, Tuple
 
 import gradio as gr
 import pickle
+import pandas as pd
 from query_data import get_chain
 from threading import Lock
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.vectorstores import ElasticVectorSearch, Pinecone, Weaviate, FAISS, Qdrant, Chroma
-from langchain.embeddings import OpenAIEmbeddings
-
-# with open("vectorstore.pkl", "rb") as f:
-#     vectorstore = pickle.load(f)
-
-#os.environ["OPENAI_API_KEY"] = put your key here
+from langchain.embeddings import OpenAIEmbeddings, HuggingFaceEmbeddings
 
 
-# Load Data
-loader = UnstructuredFileLoader("Sample_processed_regdata.txt")
-raw_documents = loader.load()
-
-# Split text
-text_splitter = RecursiveCharacterTextSplitter()
-documents = text_splitter.split_documents(raw_documents)
-
-
-# Load Data to vectorstore
-embeddings = OpenAIEmbeddings()
-vectorstore = Chroma.from_documents(documents, embeddings)
+embeddings = HuggingFaceEmbeddings()
+vectorstore = FAISS.load_local("vectorstore_regs", embeddings)
 
 def set_openai_api_key(api_key: str):
     """Set the api key and return chain.

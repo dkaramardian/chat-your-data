@@ -1,27 +1,30 @@
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from langchain.document_loaders import UnstructuredFileLoader
-#from langchain.vectorstores.faiss import FAISS
+from langchain.vectorstores.faiss import FAISS
 from langchain.vectorstores import ElasticVectorSearch, Pinecone, Weaviate, FAISS, Qdrant, Chroma
-from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings import OpenAIEmbeddings, HuggingFaceEmbeddings
+import pandas as pd
 import pickle
 import os
 
 #os.environ["OPENAI_API_KEY"] = put sk key here
 
-# Load Data
-loader = UnstructuredFileLoader("Sample_processed_regdata.txt")
-raw_documents = loader.load()
+#load data and metadata
+regdata = pd.read_csv('RegData_CFR_Transportation.csv')
+data = list(regdata['documentText'])
+sources = list(regdata['documentID'])
 
-# Split text
-text_splitter = RecursiveCharacterTextSplitter()
-documents = text_splitter.split_documents(raw_documents)
+#split up docs into chunks
+text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=0)
+docs = ''.join(data)
+metadatas = []
+texts = text_splitter.split_text(docs)
 
-
-# Load Data to vectorstore
-embeddings = OpenAIEmbeddings()
-vectorstore = FAISS.from_documents(documents, embeddings)
-
-
-# Save vectorstore
-with open("vectorstore3.pkl", "wb") as f:
-    pickle.dump(vectorstore, f)
+#create embeddings and vectorstore
+embeddings = HuggingFaceEmbeddings()
+vectorstore = FAISS.from_texts(texts, embeddings, metadatas=[{"source": i} \
+                                                                for i in range(len(texts))])
+                                                                
+#save vectorstore to local path
+vectorstore.save_local("vectorstore_regs")                                                                
+                                                                
